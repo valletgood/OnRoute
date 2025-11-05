@@ -4,10 +4,24 @@ export interface TrackingStatus {
   name: string;
 }
 
+export interface Location {
+  countryCode?: string;
+  postalCode?: string;
+  name?: string;
+}
+
+export interface ContactInfo {
+  name?: string;
+  location?: Location;
+  phoneNumber?: string;
+}
+
 export interface TrackingEvent {
   time: string;
   status: TrackingStatus;
   description: string;
+  location?: Location;
+  contact?: ContactInfo;
 }
 
 export interface TrackingEventNode {
@@ -16,10 +30,13 @@ export interface TrackingEventNode {
 
 export interface TrackingData {
   track: {
+    trackingNumber: string;
     lastEvent: TrackingEvent;
     events: {
       edges: TrackingEventNode[];
     };
+    sender?: ContactInfo;
+    recipient?: ContactInfo;
   };
 }
 

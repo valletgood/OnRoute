@@ -9,6 +9,7 @@ import type { TrackingResponse } from '@/api/types';
 const TRACK_QUERY = `
   query Track($carrierId: ID!, $trackingNumber: String!) {
     track(carrierId: $carrierId, trackingNumber: $trackingNumber) {
+      trackingNumber
       lastEvent {
         time
         status {
@@ -26,13 +27,21 @@ const TRACK_QUERY = `
               name
             }
             location {
-              countryCode
-              postalCode
               name
+            }
+            contact {
+              name
+              phoneNumber(allowInvalidFormat: true)
             }
             description
           }
         }
+      }
+      sender {
+        name
+      }
+      recipient {
+        name
       }
     }
   }
