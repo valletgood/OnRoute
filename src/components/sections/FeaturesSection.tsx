@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Zap, Database, Palette, Search } from 'lucide-react';
+import { Zap, Database, Palette } from 'lucide-react';
 
 interface Feature {
   icon: React.ReactNode;
