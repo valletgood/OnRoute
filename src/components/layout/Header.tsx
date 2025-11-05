@@ -1,17 +1,18 @@
 import { Package, Github, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-} from '@/components/ui/navigation-menu';
+import { NavigationMenu, NavigationMenuItem } from '@/components/ui/navigation-menu';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { NAV_ITEMS, type NavItem } from '@/define/navigationMenu';
-
+import { useNavigate } from 'react-router-dom';
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleClickNavigationMenu = (href: string) => {
+    navigate(href);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -29,7 +30,13 @@ export function Header() {
         <NavigationMenu className="hidden md:flex">
           {NAV_ITEMS.map((item: NavItem) => (
             <NavigationMenuItem className="list-none" key={item.name}>
-              <NavigationMenuLink href={item.href}>{item.name}</NavigationMenuLink>
+              <Button
+                variant="link"
+                className="!no-underline hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+                onClick={() => handleClickNavigationMenu(item.href)}
+              >
+                {item.name}
+              </Button>
             </NavigationMenuItem>
           ))}
         </NavigationMenu>
