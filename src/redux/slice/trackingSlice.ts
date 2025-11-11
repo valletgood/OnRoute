@@ -29,12 +29,28 @@ const trackingSlice = createSlice({
         lastEvent: TrackingEvent;
       }>,
     ) => {
-      state.recentTrackings.push({
+      const { carrierId, trackingNumber } = action.payload;
+
+      // 동일한 carrierId와 trackingNumber 조합이 이미 있는지 확인
+      const existingIndex = state.recentTrackings.findIndex(
+        (tracking) =>
+          tracking.carrierId === carrierId && tracking.trackingNumber === trackingNumber,
+      );
+
+      const newTracking = {
         carrierId: action.payload.carrierId,
         carrierName: action.payload.carrierName,
         trackingNumber: action.payload.trackingNumber,
         lastEvent: action.payload.lastEvent,
-      });
+      };
+
+      if (existingIndex >= 0) {
+        // 이미 존재하면 업데이트 (최신 정보로 갱신)
+        state.recentTrackings[existingIndex] = newTracking;
+      } else {
+        // 새로운 정보면 추가
+        state.recentTrackings.push(newTracking);
+      }
     },
     removeRecentTracking: (
       state,
