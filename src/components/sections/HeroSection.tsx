@@ -10,47 +10,41 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { COURIER_COMPANIES } from '@/define/courierCompanies';
-import { useEffect, useState } from 'react';
-import { useTracking } from '@/api';
-import { useSaveRecentTracking } from '@/api/hooks/useTracking';
-import type { TrackingData } from '@/api/types';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export function HeroSection() {
   const [trackingNumber, setTrackingNumber] = useState<string>('');
   const [selectedCompany, setSelectedCompany] = useState<string>('');
-  const [selectedCompanyName, setSelectedCompanyName] = useState<string>('');
-  const [query, setQuery] = useState<{ carrierId: string; trackingNumber: string }>({
-    carrierId: '',
-    trackingNumber: '',
-  });
-
-  const { mutate: saveRecentTracking } = useSaveRecentTracking();
+  const navigate = useNavigate();
 
   const handleSelectedCompany = (company: string) => {
     setSelectedCompany(company);
-    setSelectedCompanyName(COURIER_COMPANIES.find((c) => c.value === company)?.label || '');
   };
 
   const handleTrackingNumber = (number: string) => {
     setTrackingNumber(number);
   };
 
-  const { data, isLoading, error } = useTracking(query.carrierId, query.trackingNumber);
-
   const handleSearch = () => {
-    setQuery({ carrierId: selectedCompany, trackingNumber: trackingNumber });
+    if (!trackingNumber.trim()) {
+      return;
+    }
+
+    // Dashboard로 이동하면서 쿼리 파라미터로 전달
+    const params = new URLSearchParams({
+      trackingNumber: trackingNumber.trim(),
+      carrierId: selectedCompany || 'auto',
+    });
+
+    navigate(`/dashboard?${params.toString()}`);
   };
 
-  useEffect(() => {
-    if (!error && data) {
-      saveRecentTracking({
-        carrierId: selectedCompany,
-        carrierName: selectedCompanyName,
-        trackingNumber: trackingNumber,
-        trackingData: data.data as TrackingData,
-      });
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
     }
-  }, [data, error]);
+  };
 
   return (
     <section className="relative w-full py-20 md:py-32 lg:py-40">
@@ -80,6 +74,7 @@ export function HeroSection() {
                     className="pl-9 text-base"
                     value={trackingNumber}
                     onChange={(e) => handleTrackingNumber(e.target.value)}
+                    onKeyPress={handleKeyPress}
                   />
                 </div>
                 <Select
@@ -98,7 +93,12 @@ export function HeroSection() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Button size="lg" className="w-full sm:w-auto" onClick={handleSearch}>
+                <Button
+                  size="lg"
+                  className="w-full sm:w-auto"
+                  onClick={handleSearch}
+                  disabled={!trackingNumber.trim()}
+                >
                   배송 조회
                 </Button>
               </div>
