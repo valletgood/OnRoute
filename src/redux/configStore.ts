@@ -3,18 +3,20 @@ import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import themeReducer from '@/redux/slice/themeSlice';
 import loadingReducer from '@/redux/slice/loadingSlice';
+import trackingReducer from '@/redux/slice/trackingSlice';
 
 // Redux Persist 설정
 const persistConfig = {
   key: 'root',
   version: 1,
   storage,
-  whitelist: ['theme'],
+  whitelist: ['theme', 'tracking'],
 };
 
 const rootReducer = combineReducers({
   theme: themeReducer,
   loading: loadingReducer,
+  tracking: trackingReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
