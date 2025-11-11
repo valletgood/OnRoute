@@ -1,5 +1,7 @@
 import apiClient from '@/api/client';
-import type { TrackingResponse } from '@/api/types';
+import type { TrackingData, TrackingResponse } from '@/api/types';
+import { store } from '@/redux/configStore';
+import { addRecentTracking } from '@/redux/slice/trackingSlice';
 
 /**
  * 배송 추적 관련 API 엔드포인트
@@ -90,5 +92,20 @@ export const trackingApi = {
     }
 
     return data;
+  },
+
+  saveRecentTracking: (
+    carrierId: string,
+    carrierName: string,
+    trackingNumber: string,
+    trackingData: TrackingData,
+  ) => {
+    try {
+      const lastEvent = trackingData.track.lastEvent;
+      store.dispatch(addRecentTracking({ carrierId, carrierName, trackingNumber, lastEvent }));
+    } catch (error) {
+      console.error('배송 정보 저장 중 오류가 발생했습니다.', error);
+      throw error;
+    }
   },
 };

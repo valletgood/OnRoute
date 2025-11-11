@@ -1,6 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { trackingApi } from '@/api/endpoints/tracking';
 import { queryKeys } from '@/api/queryKeys';
+import type { TrackingData } from '../types';
 
 /**
  * 배송 추적 조회
@@ -9,7 +10,6 @@ import { queryKeys } from '@/api/queryKeys';
  * @param enabled - 쿼리 활성화 여부 (기본값: true)
  */
 export const useTracking = (carrierId: string, trackingNumber: string) => {
-  console.log(carrierId, trackingNumber);
   return useQuery({
     queryKey: queryKeys.tracking.search(carrierId, trackingNumber),
     queryFn: async () => {
@@ -17,5 +17,23 @@ export const useTracking = (carrierId: string, trackingNumber: string) => {
       return response;
     },
     enabled: !!carrierId && !!trackingNumber,
+  });
+};
+
+export const useSaveRecentTracking = () => {
+  return useMutation({
+    mutationFn: async ({
+      carrierId,
+      carrierName,
+      trackingNumber,
+      trackingData,
+    }: {
+      carrierId: string;
+      carrierName: string;
+      trackingNumber: string;
+      trackingData: TrackingData;
+    }) => {
+      trackingApi.saveRecentTracking(carrierId, carrierName, trackingNumber, trackingData);
+    },
   });
 };

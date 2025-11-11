@@ -1,12 +1,15 @@
-import type { TrackingData } from '@/api';
+import type { TrackingEvent } from '@/api';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-interface TrackingState {
-  recentTrackings: {
-    carrierId: string;
-    trackingNumber: string;
-    trackingData: TrackingData;
-  }[];
+export interface RecentTracking {
+  carrierId: string;
+  carrierName: string;
+  trackingNumber: string;
+  lastEvent: TrackingEvent;
+}
+
+export interface TrackingState {
+  recentTrackings: RecentTracking[];
 }
 
 const initialState: TrackingState = {
@@ -21,19 +24,26 @@ const trackingSlice = createSlice({
       state,
       action: PayloadAction<{
         carrierId: string;
+        carrierName: string;
         trackingNumber: string;
-        trackingData: TrackingData;
+        lastEvent: TrackingEvent;
       }>,
     ) => {
-      state.recentTrackings.push(action.payload);
+      state.recentTrackings.push({
+        carrierId: action.payload.carrierId,
+        carrierName: action.payload.carrierName,
+        trackingNumber: action.payload.trackingNumber,
+        lastEvent: action.payload.lastEvent,
+      });
     },
     removeRecentTracking: (
       state,
-      action: PayloadAction<{ carrierId: string; trackingNumber: string }>,
+      action: PayloadAction<{ carrierId: string; carrierName: string; trackingNumber: string }>,
     ) => {
       state.recentTrackings = state.recentTrackings.filter(
         (tracking) =>
           tracking.carrierId !== action.payload.carrierId ||
+          tracking.carrierName !== action.payload.carrierName ||
           tracking.trackingNumber !== action.payload.trackingNumber,
       );
     },

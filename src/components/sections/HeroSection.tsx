@@ -10,19 +10,47 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { COURIER_COMPANIES } from '@/define/courierCompanies';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useTracking } from '@/api';
+import { useSaveRecentTracking } from '@/api/hooks/useTracking';
+import type { TrackingData } from '@/api/types';
 
 export function HeroSection() {
   const [trackingNumber, setTrackingNumber] = useState<string>('');
   const [selectedCompany, setSelectedCompany] = useState<string>('');
+  const [selectedCompanyName, setSelectedCompanyName] = useState<string>('');
+  const [query, setQuery] = useState<{ carrierId: string; trackingNumber: string }>({
+    carrierId: '',
+    trackingNumber: '',
+  });
+
+  const { mutate: saveRecentTracking } = useSaveRecentTracking();
 
   const handleSelectedCompany = (company: string) => {
     setSelectedCompany(company);
+    setSelectedCompanyName(COURIER_COMPANIES.find((c) => c.value === company)?.label || '');
   };
 
   const handleTrackingNumber = (number: string) => {
     setTrackingNumber(number);
   };
+
+  const { data, isLoading, error } = useTracking(query.carrierId, query.trackingNumber);
+
+  const handleSearch = () => {
+    setQuery({ carrierId: selectedCompany, trackingNumber: trackingNumber });
+  };
+
+  useEffect(() => {
+    if (!error && data) {
+      saveRecentTracking({
+        carrierId: selectedCompany,
+        carrierName: selectedCompanyName,
+        trackingNumber: trackingNumber,
+        trackingData: data.data as TrackingData,
+      });
+    }
+  }, [data, error]);
 
   return (
     <section className="relative w-full py-20 md:py-32 lg:py-40">
@@ -70,7 +98,7 @@ export function HeroSection() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Button size="lg" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full sm:w-auto" onClick={handleSearch}>
                   배송 조회
                 </Button>
               </div>

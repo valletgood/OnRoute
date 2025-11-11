@@ -4,6 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Package, ArrowRight, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/redux/configStore';
+import type { RecentTracking, TrackingState } from '@/redux/slice/trackingSlice';
+import { formatDate } from '@/lib/dateUtils';
 
 interface TrackingItem {
   id: string;
@@ -61,14 +65,14 @@ function TrackingCardSkeleton() {
   );
 }
 
-function TrackingCard({ item }: { item: TrackingItem }) {
+function TrackingCard({ item }: { item: RecentTracking }) {
   const getStatusVariant = (status: string) => {
     switch (status) {
-      case '배송완료':
+      case 'DELIVERED':
         return 'default';
-      case '배송중':
+      case 'IN_TRANSIT':
         return 'secondary';
-      case '집하':
+      case 'AT_PICKUP':
         return 'outline';
       default:
         return 'outline';
@@ -82,21 +86,22 @@ function TrackingCard({ item }: { item: TrackingItem }) {
           <div className="flex items-center gap-2">
             <Package className="h-5 w-5 text-muted-foreground" />
             <div>
-              <CardTitle className="text-base">{item.courier}</CardTitle>
+              <CardTitle className="text-base">{item.carrierName}</CardTitle>
               <CardDescription className="text-xs">{item.trackingNumber}</CardDescription>
             </div>
           </div>
-          <Badge variant={getStatusVariant(item.status)}>{item.status}</Badge>
+          <Badge variant={getStatusVariant(item.lastEvent.status.code)}>
+            {item.lastEvent.status.name}
+          </Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-2">
-        <p className="text-sm text-muted-foreground">{item.lastEvent}</p>
+        <p className="text-sm text-muted-foreground">{item.lastEvent.description}</p>
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
-            <span>{item.lastEventTime}</span>
+            <span>{formatDate(item.lastEvent.time)}</span>
           </div>
-          {item.eta && <span className="text-primary">{item.eta}</span>}
         </div>
       </CardContent>
     </Card>
@@ -104,6 +109,7 @@ function TrackingCard({ item }: { item: TrackingItem }) {
 }
 
 export function RecentTrackingSection({ isLoading = false }: { isLoading?: boolean }) {
+  const recentTrackings = useSelector((state: RootState) => state.tracking.recentTrackings);
   const navigate = useNavigate();
   const handleClickMore = () => {
     navigate('/history');
@@ -128,7 +134,7 @@ export function RecentTrackingSection({ isLoading = false }: { isLoading?: boole
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {isLoading
             ? Array.from({ length: 3 }).map((_, i) => <TrackingCardSkeleton key={i} />)
-            : mockRecentTrackings.map((item) => <TrackingCard key={item.id} item={item} />)}
+            : recentTrackings.map((item) => <TrackingCard key={item.lastEvent.time} item={item} />)}
         </div>
 
         <div className="mt-8 flex justify-center sm:hidden">
