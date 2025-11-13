@@ -1,5 +1,5 @@
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { TrackingResult } from '@/components/tracking/TrackingResult';
 import { useTracking, useSaveRecentTracking } from '@/api/hooks/useTracking';
 import { COURIER_COMPANIES } from '@/define/courierCompanies';
@@ -24,11 +24,18 @@ export default function Dashboard() {
   // 택배사 이름 찾기
   const carrierName = COURIER_COMPANIES.find((company) => company.value === carrierId)?.label || '';
 
+  // 실시간 업데이트 상태
+  const [isRealTime, setIsRealTime] = useState(true);
+
   // 배송 조회 쿼리
-  const { data, isLoading, error, refetch } = useTracking(carrierId, trackingNumber);
+  const { data, isLoading, error, refetch } = useTracking(carrierId, trackingNumber, isRealTime);
 
   // 최근 조회 내역 저장
   const { mutate: saveRecentTracking } = useSaveRecentTracking();
+
+  const handleIsRealTime = (value: boolean) => {
+    setIsRealTime(value);
+  };
 
   useEffect(() => {
     if (data?.data && !error) {
@@ -109,7 +116,8 @@ export default function Dashboard() {
         courier={carrierName || '택배사'}
         lastEvent={lastEvent}
         events={events}
-        isRealTime={true}
+        isRealTime={isRealTime}
+        onChangeIsRealTime={handleIsRealTime}
         onRefresh={handleRefresh}
       />
     </div>

@@ -6,46 +6,8 @@ import { Package, ArrowRight, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/redux/configStore';
-import type { RecentTracking, TrackingState } from '@/redux/slice/trackingSlice';
+import type { RecentTracking } from '@/redux/slice/trackingSlice';
 import { formatDate } from '@/lib/dateUtils';
-
-interface TrackingItem {
-  id: string;
-  trackingNumber: string;
-  courier: string;
-  status: string;
-  lastEvent: string;
-  lastEventTime: string;
-  eta?: string;
-}
-
-const mockRecentTrackings: TrackingItem[] = [
-  {
-    id: '1',
-    trackingNumber: '1234567890123',
-    courier: 'CJ대한통운',
-    status: '배송중',
-    lastEvent: '배송 기사님께서 운송 중',
-    lastEventTime: '2분 전',
-    eta: '오늘 14:00 예상',
-  },
-  {
-    id: '2',
-    trackingNumber: '9876543210987',
-    courier: '한진택배',
-    status: '배송완료',
-    lastEvent: '수령인에게 전달 완료',
-    lastEventTime: '1시간 전',
-  },
-  {
-    id: '3',
-    trackingNumber: '5555555555555',
-    courier: '롯데택배',
-    status: '집하',
-    lastEvent: '집하 매장에서 접수 완료',
-    lastEventTime: '3시간 전',
-  },
-];
 
 function TrackingCardSkeleton() {
   return (
@@ -65,7 +27,13 @@ function TrackingCardSkeleton() {
   );
 }
 
-function TrackingCard({ item }: { item: RecentTracking }) {
+function TrackingCard({
+  item,
+  onClick,
+}: {
+  item: RecentTracking;
+  onClick: (tracking: RecentTracking) => void;
+}) {
   const getStatusVariant = (status: string) => {
     switch (status) {
       case 'DELIVERED':
@@ -81,7 +49,7 @@ function TrackingCard({ item }: { item: RecentTracking }) {
 
   return (
     <Card className="transition-all hover:bg-muted/50 cursor-pointer">
-      <CardHeader>
+      <CardHeader onClick={() => onClick(item)}>
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
             <Package className="h-5 w-5 text-muted-foreground" />
@@ -111,6 +79,22 @@ function TrackingCard({ item }: { item: RecentTracking }) {
 export function RecentTrackingSection({ isLoading = false }: { isLoading?: boolean }) {
   const recentTrackings = useSelector((state: RootState) => state.tracking.recentTrackings);
   const navigate = useNavigate();
+
+  const handleClickHistory = (tracking: RecentTracking) => {
+    const { carrierId, trackingNumber } = tracking;
+    if (!trackingNumber.trim()) {
+      return;
+    }
+
+    // Dashboard로 이동하면서 쿼리 파라미터로 전달
+    const params = new URLSearchParams({
+      trackingNumber: trackingNumber.trim(),
+      carrierId: carrierId || 'auto',
+    });
+
+    navigate(`/dashboard?${params.toString()}`);
+  };
+
   const handleClickMore = () => {
     navigate('/history');
   };
@@ -134,7 +118,9 @@ export function RecentTrackingSection({ isLoading = false }: { isLoading?: boole
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {isLoading
             ? Array.from({ length: 3 }).map((_, i) => <TrackingCardSkeleton key={i} />)
-            : recentTrackings.map((item) => <TrackingCard key={item.lastEvent.time} item={item} />)}
+            : recentTrackings.map((item) => (
+                <TrackingCard key={item.lastEvent.time} item={item} onClick={handleClickHistory} />
+              ))}
         </div>
 
         <div className="mt-8 flex justify-center sm:hidden">

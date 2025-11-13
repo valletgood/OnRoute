@@ -1,6 +1,5 @@
 import { TrackingSummary } from './TrackingSummary';
 import { EnhancedTimeline } from './EnhancedTimeline';
-import { MapContainer } from '@/components/map/map-container';
 import type { TrackingEvent } from '@/types/tracking';
 
 interface TrackingResultProps {
@@ -8,8 +7,9 @@ interface TrackingResultProps {
   courier: string;
   lastEvent: TrackingEvent;
   events: TrackingEvent[];
-  isRealTime?: boolean;
-  onRefresh?: () => void;
+  isRealTime: boolean;
+  onChangeIsRealTime: (value: boolean) => void;
+  onRefresh: () => void;
 }
 
 export function TrackingResult({
@@ -17,7 +17,8 @@ export function TrackingResult({
   courier,
   lastEvent,
   events,
-  isRealTime = true,
+  isRealTime,
+  onChangeIsRealTime,
   onRefresh,
 }: TrackingResultProps) {
   return (
@@ -29,18 +30,14 @@ export function TrackingResult({
         lastEvent={lastEvent}
         isRealTime={isRealTime}
         onRefresh={onRefresh}
+        onChangeIsRealTime={onChangeIsRealTime}
       />
 
       {/* 메인 컨텐츠 영역 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-2 gap-6">
         {/* 좌측: 타임라인 */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-2">
           <EnhancedTimeline events={events} lastEventTime={lastEvent.time} />
-        </div>
-
-        {/* 우측: 지도 */}
-        <div className="lg:col-span-1">
-          <MapContainer />
         </div>
       </div>
     </div>

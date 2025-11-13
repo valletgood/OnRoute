@@ -5,12 +5,15 @@ import { Button } from '@/components/ui/button';
 import type { TrackingEvent } from '@/types/tracking';
 import { format, parseISO } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { Switch } from '../ui/switch';
+import { Label } from '../ui/label';
 
 interface TrackingSummaryProps {
   trackingNumber: string;
   courier: string;
   lastEvent: TrackingEvent;
   isRealTime?: boolean;
+  onChangeIsRealTime: (value: boolean) => void;
   onRefresh?: () => void;
 }
 
@@ -19,6 +22,7 @@ export function TrackingSummary({
   courier,
   lastEvent,
   isRealTime = true,
+  onChangeIsRealTime,
   onRefresh,
 }: TrackingSummaryProps) {
   const getStatusVariant = (statusCode: string) => {
@@ -63,28 +67,22 @@ export function TrackingSummary({
       <div className={`p-6 ${getStatusColor(lastEvent.status.code)}`}>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 space-y-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-start gap-3">
               <div className="p-2 rounded-lg bg-background/50">
                 <Package className="h-6 w-6 text-primary" />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold">{courier}</h1>
+              <div className="flex-1">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h1 className="text-2xl font-bold">{courier}</h1>
+                  <Badge
+                    variant={getStatusVariant(lastEvent.status.code)}
+                    className="text-sm px-2.5 py-1"
+                  >
+                    {lastEvent.status.name}
+                  </Badge>
+                </div>
                 <p className="text-sm text-muted-foreground mt-1">운송장 번호: {trackingNumber}</p>
               </div>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge
-                variant={getStatusVariant(lastEvent.status.code)}
-                className="text-base px-3 py-1"
-              >
-                {lastEvent.status.name}
-              </Badge>
-              {isRealTime && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                  <span>실시간 업데이트 중</span>
-                </div>
-              )}
             </div>
             <div className="flex items-start gap-2 pt-2 border-t border-border/50">
               <Clock className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
@@ -94,11 +92,28 @@ export function TrackingSummary({
               </div>
             </div>
           </div>
-          {onRefresh && (
-            <Button variant="outline" size="icon" onClick={onRefresh}>
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-          )}
+          <div className="flex flex-col items-end justify-end gap-5">
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={isRealTime}
+                onCheckedChange={onChangeIsRealTime}
+                id="airplane-mode"
+              />
+              <Label htmlFor="airplane-mode">실시간 업데이트</Label>
+            </div>
+            <div className="flex items-center justify-center gap-5">
+              {isRealTime ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                  <span>실시간 업데이트 중</span>
+                </div>
+              ) : (
+                <Button variant="outline" size="icon" onClick={onRefresh}>
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </Card>
